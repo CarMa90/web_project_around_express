@@ -12,7 +12,6 @@ app.use('/', cardsRoutes);
 
 app.use((req, res) => {
   res.status(404).send({
-    error: 'Ruta no encontrada',
     mensaje: 'Recurso solicitado no encontrado',
   });
 });
