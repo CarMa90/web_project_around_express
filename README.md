@@ -6,4 +6,4 @@ Este proyecto crea un servidor con node js en donde se toman en cuenta dos tipos
 
 ## Tecnología utilizadas:
 
-Node.js y Express.js
+Node.js y Express.js MongoDB
