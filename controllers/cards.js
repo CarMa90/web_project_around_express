@@ -25,7 +25,7 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndDelete(req.params.id)
+  Card.findByIdAndDelete(req.params.cardId)
     .orFail(() => {
       const error = new Error('No se encontró ninguna tarjeta con ese ID');
       error.statusCode = 404;
@@ -53,9 +53,13 @@ module.exports.likeCard = (req, res) => {
     {
       $addToSet: { likes: req.user._id },
     },
-    { returnDocument: 'after' }
+    { returnDocument: 'after' },
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error('No se encontró ninguna tarjeta con ese ID');
+      error.statusCode = 404;
+      throw error;
+    })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       console.log(err.name);
@@ -63,6 +67,10 @@ module.exports.likeCard = (req, res) => {
       if (err.name === 'CastError') {
         const msg = `La tarjeta con id: ${req.params.cardId} no existe`;
         return res.status(404).send({ message: msg });
+      }
+
+      if (err.statusCode) {
+        return res.status(err.statusCode).send({ message: err.message });
       }
 
       return res.status(500).send({ message: 'Error' });
@@ -75,7 +83,7 @@ module.exports.dislikeCard = (req, res) => {
     {
       $pull: { likes: req.user._id },
     },
-    { returnDocument: 'after' }
+    { returnDocument: 'after' },
   )
     .orFail()
     .then((card) => res.send({ data: card }))

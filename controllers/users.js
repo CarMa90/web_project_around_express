@@ -3,11 +3,11 @@ const User = require('../models/user');
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).sned({ message: 'Error' }));
+    .catch(() => res.status(500).send({ message: 'Error' }));
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id)
+  User.findById(req.params.userId)
     .orFail(() => {
       const error = new Error('No se encontró ningún usuario con ese ID');
       error.statusCode = 404;
@@ -53,7 +53,7 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { returnDocument: 'after', runValidators: true, upsert: false }
+    { returnDocument: 'after', runValidators: true, upsert: false },
   )
     .orFail()
     .then((user) => res.send({ data: user }))
@@ -78,7 +78,7 @@ module.exports.updateUserAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { returnDocument: 'after', runValidators: true, upsert: false }
+    { returnDocument: 'after', runValidators: true, upsert: false },
   )
     .orFail()
     .then((user) => res.send({ data: user }))

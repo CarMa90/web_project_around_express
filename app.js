@@ -5,7 +5,9 @@ const usersRoutes = require('./routes/users');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/aroundb');
+mongoose
+  .connect('mongodb://localhost:27017/aroundb')
+  .catch((err) => console.error('Error de conexión a MongoDB:', err));
 
 const { PORT = 3000 } = process.env;
 
