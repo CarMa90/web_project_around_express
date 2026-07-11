@@ -15,8 +15,6 @@ module.exports.getUserById = (req, res) => {
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      // console.log(err.name, err.message);
-
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'ID de usuario invalido' });
       }
@@ -31,12 +29,9 @@ module.exports.getUserById = (req, res) => {
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  // console.log(req.body);
-
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'ValidationError') {
         const ERROR_CODE = 400;
         return res.status(ERROR_CODE).send({
@@ -58,8 +53,6 @@ module.exports.updateUser = (req, res) => {
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      // console.log(err.name, err.message);
-
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: err.message });
       }
@@ -83,8 +76,6 @@ module.exports.updateUserAvatar = (req, res) => {
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      // console.log(err.name);
-
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: err.message });
       }

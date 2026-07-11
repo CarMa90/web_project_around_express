@@ -7,13 +7,11 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.createCard = (req, res) => {
-  // console.log(req.user._id);
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      console.log(err.name);
       if (err.name === 'ValidationError') {
         const ERROR_CODE = 400;
         return res.status(ERROR_CODE).send({
@@ -33,8 +31,6 @@ module.exports.deleteCardById = (req, res) => {
     })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      // console.log(err.statusCode, err.name, err.message);
-
       if (err.name === 'CastError') {
         return res.status(400).send({ message: 'ID de tarjeta inválido' });
       }
@@ -62,8 +58,6 @@ module.exports.likeCard = (req, res) => {
     })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      console.log(err.name);
-
       if (err.name === 'CastError') {
         const msg = `La tarjeta con id: ${req.params.cardId} no existe`;
         return res.status(404).send({ message: msg });
@@ -88,8 +82,6 @@ module.exports.dislikeCard = (req, res) => {
     .orFail()
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      console.log(err.name);
-
       if (err.name === 'CastError') {
         const msg = `La tarjeta con id: ${req.params.cardId} no existe`;
         return res.status(404).send({ message: msg });
