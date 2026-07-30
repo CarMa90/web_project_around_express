@@ -1,49 +1,53 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
+    .orFail(() => {
+      const error = new NotFoundError(
+        'No fue posible encontrar los elementos buscados',
+      );
+      throw error;
+    })
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Error' }));
+    .catch((err) => {
+      next(err);
+    });
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        const ERROR_CODE = 400;
-        return res.status(ERROR_CODE).send({
-          message: err.message,
-        });
+        next(new BadRequestError(err.message));
       }
-      return res.status(500).send({ message: 'Error' });
+      next(err);
     });
 };
 
-module.exports.deleteCardById = (req, res) => {
+module.exports.deleteCardById = (req, res, next) => {
   Card.findByIdAndDelete(req.params.cardId)
     .orFail(() => {
-      const error = new Error('No se encontró ninguna tarjeta con ese ID');
-      error.statusCode = 404;
+      const error = new NotFoundError(
+        'No se encontró ninguna tarjeta con ese ID',
+      );
       throw error;
     })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'ID de tarjeta inválido' });
+        next(new BadRequestError('ID de tarjeta inválido'));
       }
 
-      if (err.statusCode) {
-        return res.status(err.statusCode).send({ message: err.message });
-      }
-
-      return res.status(500).send({ message: 'Error' });
+      next(err);
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
@@ -52,26 +56,22 @@ module.exports.likeCard = (req, res) => {
     { returnDocument: 'after' },
   )
     .orFail(() => {
-      const error = new Error('No se encontró ninguna tarjeta con ese ID');
-      error.statusCode = 404;
+      const error = new NotFoundError(
+        `La tarjeta con id: ${req.params.cardId} no existe`,
+      );
       throw error;
     })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        const msg = `La tarjeta con id: ${req.params.cardId} no existe`;
-        return res.status(404).send({ message: msg });
+        next(new BadRequestError(`El id: ${req.params.cardId} no es válido`));
       }
 
-      if (err.statusCode) {
-        return res.status(err.statusCode).send({ message: err.message });
-      }
-
-      return res.status(500).send({ message: 'Error' });
+      next(err);
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     {
@@ -79,14 +79,18 @@ module.exports.dislikeCard = (req, res) => {
     },
     { returnDocument: 'after' },
   )
-    .orFail()
+    .orFail(() => {
+      const error = new NotFoundError(
+        `La tarjeta con id: ${req.params.cardId} no existe`,
+      );
+      throw error;
+    })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        const msg = `La tarjeta con id: ${req.params.cardId} no existe`;
-        return res.status(404).send({ message: msg });
+        next(new BadRequestError(`El id: ${req.params.cardId} no es válido`));
       }
 
-      return res.status(500).send({ message: 'Error' });
+      next(err);
     });
 };
